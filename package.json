@@ -1,0 +1,27 @@
+{
+  "name": "market-data-analytics",
+  "version": "1.0.0",
+  "description": "A market data analysis platform empowering businesses to make informed decisions",
+  "main": "index.js",
+  "scripts": {
+    "test": "int1z here"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tidzvl/Market-Data-Analytics.git"
+  },
+  "keywords": [
+    "Market",
+    "Data",
+    "Analytics"
+  ],
+  "author": "TiDz",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tidzvl/Market-Data-Analytics/issues"
+  },
+  "homepage": "https://github.com/tidzvl/Market-Data-Analytics#readme",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
