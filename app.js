@@ -18,13 +18,29 @@
  * Useage: 
  */
 
-const express = require('express');
+const express = require("express");
+const path = require("path");
+const axios = require('axios');
 const app = express();
 
-app.get('/', (req, res) => {
-  res.send('Xin chào thế giới!');
+app.use(express.static(path.join(__dirname, "public")));
+app.use("/assets", express.static(path.join(__dirname, "assets")));
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/", "index.html"));
 });
 
-app.listen(3000, () => {
-  console.log('Server đang chạy trên cổng 3000');
+// app.get("/api/data", async (req, res) => {
+//   try {
+//     const response = await axios.get("http://127.0.0.1:5000/api/addCountry");
+//     res.json(response.data);
+//   } catch (error) {
+//     console.error("Error calling Python API:", error);
+//     res.status(500).send("Error calling Python API");
+//   }
+// });
+
+const PORT = process.env.PORT || 80;
+app.listen(PORT, () => {
+  console.log(`Server đang chạy tại http://localhost:${PORT}`);
 });
