@@ -12,6 +12,7 @@ from app.models import SalesInfo, QuarterlySalesInfo, CountryRegion, ProductSubc
 import pandas as pd
 from sqlalchemy import text
 from flask import jsonify
+from collections import defaultdict
 import os
 
 def add_salesinfo(data):
@@ -128,7 +129,11 @@ def get_revenue_and_profit():
             QUARTER(qsi.StartDate) AS Quarter,
             qsi.CountryRegionCode,
             SUM(qsi.LineTotal) AS TotalRevenue,
-            SUM(qsi.OrderQty * si.ProfitPerProduct) AS TotalProfit
+            SUM(qsi.OrderQty * si.ProfitPerProduct) AS TotalProfit,
+            SUM(CASE WHEN qsi.CategoryName = 'Bikes' THEN qsi.OrderQty ELSE 0 END) AS Bikes,
+            SUM(CASE WHEN qsi.CategoryName = 'Components' THEN qsi.OrderQty ELSE 0 END) AS Components,
+            SUM(CASE WHEN qsi.CategoryName = 'Clothing' THEN qsi.OrderQty ELSE 0 END) AS Clothing,
+            SUM(CASE WHEN qsi.CategoryName = 'Accessories' THEN qsi.OrderQty ELSE 0 END) AS Accessories
         FROM 
             QuarterlySalesInfo qsi
         JOIN 
@@ -145,8 +150,203 @@ def get_revenue_and_profit():
     """)
     result = db.session.execute(sql) 
     data = result.mappings().all()
-    data_dict = [dict(row) for row in data] 
-    return jsonify(data_dict), 200
+
+    group_data = {}
+    for row in data:
+        country = row['CountryRegionCode']
+        if country not in group_data:
+            group_data[country] = []
+        group_data[country].append(dict(row))
+
+    # data_dict = [dict(row) for row in data] 
+    return jsonify(group_data), 200
+
+def get_weight_and_subcategory():
+    sql = text("""
+        SELECT 
+            YEAR(qsi.StartDate) AS Year,
+            QUARTER(qsi.StartDate) AS Quarter,
+            qsi.CountryRegionCode,
+            SUM(qsi.LineTotal) AS TotalRevenue,
+            SUM(qsi.OrderQty * si.ProfitPerProduct) AS TotalProfit,
+
+            SUM(CASE WHEN qsi.SubcategoryName = 'Mountain Bikes' THEN qsi.OrderQty ELSE 0 END) AS MountainBikes,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Road Bikes' THEN qsi.OrderQty ELSE 0 END) AS RoadBikes,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Touring Bikes' THEN qsi.OrderQty ELSE 0 END) AS TouringBikes,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Handlebars' THEN qsi.OrderQty ELSE 0 END) AS Handlebars,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Bottom Brackets' THEN qsi.OrderQty ELSE 0 END) AS BottomBrackets,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Brakes' THEN qsi.OrderQty ELSE 0 END) AS Brakes,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Chains' THEN qsi.OrderQty ELSE 0 END) AS Chains,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Cranksets' THEN qsi.OrderQty ELSE 0 END) AS Cranksets,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Derailleurs' THEN qsi.OrderQty ELSE 0 END) AS Derailleurs,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Forks' THEN qsi.OrderQty ELSE 0 END) AS Forks,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Headsets' THEN qsi.OrderQty ELSE 0 END) AS Headsets,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Mountain Frames' THEN qsi.OrderQty ELSE 0 END) AS MountainFrames,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Pedals' THEN qsi.OrderQty ELSE 0 END) AS Pedals,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Road Frames' THEN qsi.OrderQty ELSE 0 END) AS RoadFrames,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Saddles' THEN qsi.OrderQty ELSE 0 END) AS Saddles, 
+            SUM(CASE WHEN qsi.SubcategoryName = 'Touring Frames' THEN qsi.OrderQty ELSE 0 END) AS TouringFrames,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Wheels' THEN qsi.OrderQty ELSE 0 END) AS Wheels,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Bib-Shorts' THEN qsi.OrderQty ELSE 0 END) AS BibShorts,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Caps' THEN qsi.OrderQty ELSE 0 END) AS Caps,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Gloves' THEN qsi.OrderQty ELSE 0 END) AS Gloves,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Jerseys' THEN qsi.OrderQty ELSE 0 END) AS Jerseys,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Shorts' THEN qsi.OrderQty ELSE 0 END) AS Shorts,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Socks' THEN qsi.OrderQty ELSE 0 END) AS Socks,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Tights' THEN qsi.OrderQty ELSE 0 END) AS Tights,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Vests' THEN qsi.OrderQty ELSE 0 END) AS Vests,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Bike Racks' THEN qsi.OrderQty ELSE 0 END) AS BikeRacks,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Bike Stands' THEN qsi.OrderQty ELSE 0 END) AS BikeStands,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Bottles and Cages' THEN qsi.OrderQty ELSE 0 END) AS BottlesandCages,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Cleaners' THEN qsi.OrderQty ELSE 0 END) AS Cleaners,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Fenders' THEN qsi.OrderQty ELSE 0 END) AS Fenders,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Helmets' THEN qsi.OrderQty ELSE 0 END) AS Helmets,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Hydration Packs' THEN qsi.OrderQty ELSE 0 END) AS HydrationPacks,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Lights' THEN qsi.OrderQty ELSE 0 END) AS Lights,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Locks' THEN qsi.OrderQty ELSE 0 END) AS Lockss,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Panniers' THEN qsi.OrderQty ELSE 0 END) AS Panniers,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Pumps' THEN qsi.OrderQty ELSE 0 END) AS Pumps,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Tires and Tubes' THEN qsi.OrderQty ELSE 0 END) AS TiresandTubes,
+
+            SUM(CASE WHEN qsi.SubcategoryName = 'Mountain Bikes' THEN qsi.Weight ELSE 0 END) AS MountainBikesWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Road Bikes' THEN qsi.Weight ELSE 0 END) AS RoadBikesWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Touring Bikes' THEN qsi.Weight ELSE 0 END) AS TouringBikesWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Handlebars' THEN qsi.Weight ELSE 0 END) AS HandlebarsWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Bottom Brackets' THEN qsi.Weight ELSE 0 END) AS BottomBracketsWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Brakes' THEN qsi.Weight ELSE 0 END) AS BrakesWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Chains' THEN qsi.Weight ELSE 0 END) AS ChainsWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Cranksets' THEN qsi.Weight ELSE 0 END) AS CranksetsWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Derailleurs' THEN qsi.Weight ELSE 0 END) AS DerailleursWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Forks' THEN qsi.Weight ELSE 0 END) AS ForksWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Headsets' THEN qsi.Weight ELSE 0 END) AS HeadsetsWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Mountain Frames' THEN qsi.Weight ELSE 0 END) AS MountainFramesWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Pedals' THEN qsi.Weight ELSE 0 END) AS PedalsWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Road Frames' THEN qsi.Weight ELSE 0 END) AS RoadFramesWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Saddles' THEN qsi.Weight ELSE 0 END) AS SaddlesWeight, 
+            SUM(CASE WHEN qsi.SubcategoryName = 'Touring Frames' THEN qsi.Weight ELSE 0 END) AS TouringFramesWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Wheels' THEN qsi.Weight ELSE 0 END) AS WheelsWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Bib-Shorts' THEN qsi.Weight ELSE 0 END) AS BibShortsWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Caps' THEN qsi.Weight ELSE 0 END) AS CapsWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Gloves' THEN qsi.Weight ELSE 0 END) AS GlovesWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Jerseys' THEN qsi.Weight ELSE 0 END) AS JerseysWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Shorts' THEN qsi.Weight ELSE 0 END) AS ShortsWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Socks' THEN qsi.Weight ELSE 0 END) AS SocksWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Tights' THEN qsi.Weight ELSE 0 END) AS TightsWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Vests' THEN qsi.Weight ELSE 0 END) AS VestsWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Bike Racks' THEN qsi.Weight ELSE 0 END) AS BikeRacksWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Bike Stands' THEN qsi.Weight ELSE 0 END) AS BikeStandsWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Bottles and Cages' THEN qsi.Weight ELSE 0 END) AS BottlesandCagesWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Cleaners' THEN qsi.Weight ELSE 0 END) AS CleanersWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Fenders' THEN qsi.Weight ELSE 0 END) AS FendersWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Helmets' THEN qsi.Weight ELSE 0 END) AS HelmetsWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Hydration Packs' THEN qsi.Weight ELSE 0 END) AS HydrationPacksWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Lights' THEN qsi.Weight ELSE 0 END) AS LightsWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Locks' THEN qsi.Weight ELSE 0 END) AS LockssWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Panniers' THEN qsi.Weight ELSE 0 END) AS PanniersWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Pumps' THEN qsi.Weight ELSE 0 END) AS PumpsWeight,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Tires and Tubes' THEN qsi.Weight ELSE 0 END) AS TiresandTubesWeight,
+            
+            SUM(CASE WHEN qsi.SubcategoryName = 'Mountain Bikes' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS MountainBikesProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Road Bikes' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS RoadBikesProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Touring Bikes' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS TouringBikesProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Handlebars' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS HandlebarsProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Bottom Brackets' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS BottomBracketsProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Brakes' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS BrakesProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Chains' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS ChainsProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Cranksets' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS CranksetsProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Derailleurs' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS DerailleursProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Forks' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS ForksProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Headsets' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS HeadsetsProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Mountain Frames' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS MountainFramesProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Pedals' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS PedalsProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Road Frames' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS RoadFramesProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Saddles' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS SaddlesProfit, 
+            SUM(CASE WHEN qsi.SubcategoryName = 'Touring Frames' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS TouringFramesProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Wheels' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS WheelsProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Bib-Shorts' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS BibShortsProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Caps' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS CapsProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Gloves' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS GlovesProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Jerseys' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS JerseysProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Shorts' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS ShortsProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Socks' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS SocksProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Tights' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS TightsProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Vests' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS VestsProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Bike Racks' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS BikeRacksProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Bike Stands' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS BikeStandsProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Bottles and Cages' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS BottlesandCagesProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Cleaners' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS CleanersProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Fenders' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS FendersProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Helmets' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS HelmetsProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Hydration Packs' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS HydrationPacksProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Lights' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS LightsProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Locks' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS LockssProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Panniers' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS PanniersProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Pumps' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS PumpsProfit,
+            SUM(CASE WHEN qsi.SubcategoryName = 'Tires and Tubes' THEN qsi.OrderQty * si.ProfitPerProduct ELSE 0 END) AS TiresandTubesProfit,
+            
+            SUM(qsi.Weight) AS TotalWeightAllSubcategories
+        FROM 
+            QuarterlySalesInfo qsi
+        JOIN 
+            SalesInfo si ON qsi.ProductID = si.ProductID AND qsi.CountryRegionCode = si.CountryRegionCode
+        GROUP BY 
+            YEAR(qsi.StartDate), 
+            QUARTER(qsi.StartDate),
+            qsi.CountryRegionCode
+        ORDER BY 
+            YEAR(qsi.StartDate),
+            QUARTER(qsi.StartDate),
+            qsi.CountryRegionCode
+        LIMIT 0, 1000;
+        """)
+    result = db.session.execute(sql) 
+    data = result.mappings().all()
+
+    # group_data = {}
+    # for row in data:
+    #     country = row['CountryRegionCode']
+    #     if country not in group_data:
+    #         group_data[country] = []
+    #     group_data[country].append(dict(row))
+    group_data = defaultdict(lambda: defaultdict(lambda: defaultdict(list))) 
+    for row in data: 
+        country = row['CountryRegionCode'] 
+        year = row['Year'] 
+        quarter = row['Quarter'] 
+        group_data[country][year][quarter].append(dict(row))
+
+    grouped_by_subcategory = {}
+
+    for country, year_data in group_data.items():
+        grouped_by_subcategory[country] = {}
+        for year, quarter_data in year_data.items():
+            grouped_by_subcategory[country][year] = {}
+            for quarter, records in quarter_data.items():
+                subcategory_data = {}
+                for record in records:
+                    total_profit = float(record['TotalProfit']) if record['TotalProfit'] else 1  
+                    total_weight = float(record['TotalWeightAllSubcategories']) if record['TotalWeightAllSubcategories'] else 1  
+                    for key, value in record.items():
+                        if 'Profit' in key and key != 'TotalProfit':
+                            subcategory = key.replace('Profit', '')
+                            subcategory_data.setdefault(subcategory, {"Quantity": 0, "Weight": 0.0, "Profit": 0.0})
+                            profit_value = float(value)
+                            subcategory_data[subcategory]['Profit'] += max(round(profit_value / total_profit * 100, 2), 0)
+                        elif 'Weight' in key and key != 'TotalWeightAllSubcategories':
+                            subcategory = key.replace('Weight', '')
+                            subcategory_data.setdefault(subcategory, {"Quantity": 0, "Weight": 0.0, "Profit": 0.0})
+                            weight_value = float(value)
+                            if weight_value == 0:
+                                weight_value = 0.1
+                            subcategory_data[subcategory]['Weight'] += max(round(weight_value / total_weight * 100, 2), 0)
+                        elif key not in ('TotalRevenue', 'TotalProfit', 'TotalWeightAllSubcategories', 'Year', 'Quarter', 'CountryRegionCode'):
+                            subcategory = key
+                            subcategory_data.setdefault(subcategory, {"Quantity": 0, "Weight": 0.0, "Profit": 0.0})
+                            subcategory_data[subcategory]['Quantity'] += int(value)
+                filtered_subcategory_data = {k: v for k, v in subcategory_data.items() if not (v['Quantity'] == 0 and v['Profit'] == 0.0)}
+                grouped_by_subcategory[country][year][quarter] = filtered_subcategory_data
+
+    return jsonify(grouped_by_subcategory)
 
 def test():
     return {"message": "No broblem!"}, 201

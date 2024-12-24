@@ -39,6 +39,10 @@ def api_add_productSubcategory():
 def api_get_revenue_and_profit():
     return get_revenue_and_profit()
 
+@app.route('/api/getWeightAndSubcategory', methods=['GET'])
+def api_get_weight_and_subcategory():
+    return get_weight_and_subcategory()
+
 @app.route('/api/test', methods=['POST'])
 def api_test():
     result, status = test()
