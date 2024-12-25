@@ -7,7 +7,7 @@
 # Useage: 
 #
 
-from flask import request
+from flask import request, render_template
 from app import app
 from app.controllers import *
 
@@ -43,7 +43,33 @@ def api_get_revenue_and_profit():
 def api_get_weight_and_subcategory():
     return get_weight_and_subcategory()
 
+@app.route('/api/getAllProducts', methods=['GET'])
+def api_get_all_products():
+    return get_all_products()
+
+@app.route('/api/addNewProduct', methods=['POST'])
+def api_add_new_product():
+    data = request.json
+    result, status = add_new_product(data['name'],data['desc'],data['weight'], data['cost'], data['subcategoryid'])
+    return jsonify(result), status
+
+@app.route('/api/deleteProduct', methods=['POST'])
+def api_delete_product():
+    data = request.json
+    result, status = delete_product(data['productid'])
+    return jsonify(result), status
+
+@app.route('/api/updateProduct', methods=['POST'])
+def api_update_product():
+    data = request.json
+    result, status = update_sales(data['productid'], data['country'], data['qty'], data['sellprice'], data['cost'])
+    return jsonify(result), status
+
 @app.route('/api/test', methods=['POST'])
 def api_test():
     result, status = test()
     return jsonify(result), status
+
+@app.route('/')
+def index():
+    return render_template('index.html')

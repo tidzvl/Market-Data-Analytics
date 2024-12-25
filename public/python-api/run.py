@@ -19,8 +19,8 @@
 #
 
 from flask import Flask, jsonify
-from app import app
+from app import app, socketio
 from app.controllers import *
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    socketio.run(app, port=80, debug=True)

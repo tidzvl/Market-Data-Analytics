@@ -18,29 +18,66 @@ let quarterNyear = [
   { quarter: "3", year: "2013" },
   { quarter: "4", year: "2013"},
   { quarter: "1", year: "2014"},
-  { quarter: "2", year: "2014" }
+  { quarter: "2", year: "2014" },
+  { quarter: "4", year: "2024" },
 ];
 
 ("use strict");
 (function () {
-  console.log(quarterNyear[0])
-  fetch(ApiHost + "/api/test", {
-    method: "POST",
-    headers: { "Content-type": "application/json; charset=UTF-8" },
-    // body: JSON.stringify({ CountryRegionCode: "1", CountryRegionName: "US" }),
-  })
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      }
-      throw new Error("Network response was not ok.");
-    })
-    .then((data) => {
-      console.log(data);
-    })
-    .catch((error) => {
-      console.error("There was a problem with the fetch operation:", error);
+  function setupWebSocket() {
+    var socket = io.connect(ApiHost);
+    socket.on("connect", function () {
+        console.log("Connected to WebSocket");
     });
+    socket.on('update_data', function(data) { 
+        console.log(data);
+        console.log("change");
+        getRevenueAndProfit().then((data) => {
+          sessionStorage.setItem("RevenueAndProfit", JSON.stringify(data));
+          render_website_analytics("US");
+          // renderChartSumOfRegion();
+        });
+        getWeightAndSub().then((data) => {
+          sessionStorage.setItem("was", JSON.stringify(data));
+          renderSubcategory("US", "2011", "2");
+        });
+    });
+  }
+  setupWebSocket();
+  // fetch(ApiHost + "/api/getAllProducts", {
+  //   method: "GET",
+  //   headers: { "Content-type": "application/json; charset=UTF-8" },
+  //   // body: JSON.stringify({ region: "US" }),
+  // }).then((response) => {
+  //   if (response.ok) {
+  //     return response.json();
+  //   }
+  //   throw new Error("Network response was not ok.");
+  // })
+  // .then((data) => {
+  //   console.log(data);
+  // })
+  // .catch((error) => {
+  //   console.error("There was a problem with the fetch operation:", error);
+  // });
+
+  // fetch(ApiHost + "/api/test", {
+  //   method: "POST",
+  //   headers: { "Content-type": "application/json; charset=UTF-8" },
+  //   // body: JSON.stringify({ CountryRegionCode: "1", CountryRegionName: "US" }),
+  // })
+  //   .then((response) => {
+  //     if (response.ok) {
+  //       return response.json();
+  //     }
+  //     throw new Error("Network response was not ok.");
+  //   })
+  //   .then((data) => {
+  //     console.log(data);
+  //   })
+  //   .catch((error) => {
+  //     console.error("There was a problem with the fetch operation:", error);
+  //   });
 
   let cardColor, headingColor, labelColor, legendColor, borderColor, shadeColor;
 
@@ -58,59 +95,6 @@ let quarterNyear = [
     legendColor = config.colors.bodyColor;
     borderColor = config.colors.borderColor;
     shadeColor = "light";
-  }
-
-  // Report Chart
-  // --------------------------------------------------------------------
-
-  // Radial bar chart functions
-  function radialBarChart(color, value) {
-    const radialBarChartOpt = {
-      chart: {
-        height: 50,
-        width: 50,
-        type: "radialBar",
-      },
-      plotOptions: {
-        radialBar: {
-          hollow: {
-            size: "25%",
-          },
-          dataLabels: {
-            show: false,
-          },
-          track: {
-            background: borderColor,
-          },
-        },
-      },
-      stroke: {
-        lineCap: "round",
-      },
-      colors: [color],
-      grid: {
-        padding: {
-          top: -8,
-          bottom: -10,
-          left: -5,
-          right: 0,
-        },
-      },
-      series: [value],
-      labels: ["Progress"],
-    };
-    return radialBarChartOpt;
-  }
-
-  const ReportchartList = document.querySelectorAll(".chart-report");
-  if (ReportchartList) {
-    ReportchartList.forEach(function (ReportchartEl) {
-      const color = config.colors[ReportchartEl.dataset.color],
-        series = ReportchartEl.dataset.series;
-      const optionsBundle = radialBarChart(color, series);
-      const reportChart = new ApexCharts(ReportchartEl, optionsBundle);
-      reportChart.render();
-    });
   }
 
   // Analytics - Bar Chart
@@ -131,12 +115,18 @@ let quarterNyear = [
       render_website_analytics(country);
     });
   });
-  getRevenueAndProfit().then((data) => {
-    sessionStorage.setItem("RevenueAndProfit", JSON.stringify(data));
+  const roundToMillions = (num) => (parseFloat(num) / 1000000).toFixed(2);
+  const revenueAndProfit = sessionStorage.getItem("RevenueAndProfit");
+  if(!revenueAndProfit){
+    getRevenueAndProfit().then((data) => {
+      sessionStorage.setItem("RevenueAndProfit", JSON.stringify(data));
+      render_website_analytics("US");
+      renderChartSumOfRegion();
+    });
+  }else{
     render_website_analytics("US");
     renderChartSumOfRegion();
-  });
-  const roundToMillions = (num) => (parseFloat(num) / 1000000).toFixed(2);
+  }
   function render_website_analytics(country_tab) {
     // getRevenueAndProfit().then((data) => {
     const data = JSON.parse(sessionStorage.getItem("RevenueAndProfit"));
@@ -168,6 +158,15 @@ let quarterNyear = [
     const profitmargin = parseFloat((sumOfProfit / sumOfRevenue) * 100).toFixed(
       2
     );
+    console.log(mean_data);
+    const quarter = [];
+    for (const [key, value] of Object.entries(mean_data)) {
+      const key = "Q"+value['Quarter']+"/"+value['Year'];
+      quarter.push(key);
+      // console.log(key);
+    }
+
+
     //CLEAN DATA END
     document.querySelector(".sumofrevenue").innerHTML =
       roundToMillions(sumOfRevenue) + "M";
@@ -239,21 +238,7 @@ let quarterNyear = [
           },
         },
         xaxis: {
-          categories: [
-            "Q2/2011",
-            "Q3/2011",
-            "Q4/2011",
-            "Q1/2012",
-            "Q2/2012",
-            "Q3/2012",
-            "Q4/2012",
-            "Q1/2013",
-            "Q2/2013",
-            "Q3/2013",
-            "Q4/2013",
-            "Q1/2014",
-            "Q2/2014",
-          ],
+          categories: quarter,
           axisBorder: {
             show: false,
           },
@@ -434,7 +419,6 @@ let quarterNyear = [
       const revenueAU = data["AU"].map((item) =>
         roundToMillions(item.TotalRevenue)
       );
-      console.log(revenueAU);
       const lineChartVar = new Chart(lineChart, {
         type: "line",
         data: {

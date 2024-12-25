@@ -7,7 +7,7 @@
 # Useage: 
 #
 
-from app import db
+from app import db, socketio
 from app.models import SalesInfo, QuarterlySalesInfo, CountryRegion, ProductSubcategory
 import pandas as pd
 from sqlalchemy import text
@@ -347,6 +347,63 @@ def get_weight_and_subcategory():
                 grouped_by_subcategory[country][year][quarter] = filtered_subcategory_data
 
     return jsonify(grouped_by_subcategory)
+
+def get_all_products():
+    sql = text('SELECT * FROM salesinfo;')
+    result = db.session.execute(sql) 
+    data = result.mappings().all()
+
+    group_data = {}
+    for row in data:
+        country = row['CountryRegionCode']
+        if country not in group_data:
+            group_data[country] = []
+        group_data[country].append(dict(row))
+
+    # data_dict = [dict(row) for row in data] 
+    return jsonify(group_data), 200
+
+def add_new_product(name,desc,weight, cost, subcategoryid):
+    result = db.session.execute(
+        text("CALL AddNewProduct(:name,:desc,:weight, :cost, :subcategoryid)"), 
+        { 
+            'name': name,
+            'desc': desc,
+            'weight': weight, 
+            'cost': cost, 
+            'subcategoryid': subcategoryid, 
+        }
+    )
+    db.session.commit()
+    socketio.emit('update_data', {'status': 'success', 'message': 'Product updated successfully'})
+    return {"message": "product added successfully"}, 201
+
+def delete_product(productid):
+    result = db.session.execute(
+        text("CALL DeleteProduct(:id)"), 
+        { 
+            'id': productid,
+        }
+    )
+    db.session.commit()
+    socketio.emit('update_data', {'status': 'success', 'message': 'Product updated successfully'})
+    return {"message": "product deleted successfully"}, 201
+
+def update_sales(productid, country, qty, sellprice, cost=None):
+    result = db.session.execute(
+        text("CALL UpdateProductSales(:productid, :country, :qty, :sellprice, :cost)"), 
+        { 
+            'productid': productid,
+            'country':country,
+            'qty':qty,
+            'sellprice':sellprice,
+            'cost':cost
+        }
+    )
+    db.session.commit()
+    socketio.emit('update_data', {'status': 'success', 'message': 'Product updated successfully'})
+    return {"message": "updated successfully"}, 201
+
 
 def test():
     return {"message": "No broblem!"}, 201
