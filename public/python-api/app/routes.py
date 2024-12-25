@@ -73,3 +73,7 @@ def api_test():
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/manager')
+def manager():
+    return render_template('manager/index.html')

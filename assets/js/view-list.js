@@ -7,7 +7,6 @@
 // Datatable (jquery)
 $(function () {
   let borderColor, bodyBg, headingColor;
-
   if (isDarkStyle) {
     borderColor = config.colors_dark.borderColor;
     bodyBg = config.colors_dark.bodyBg;
@@ -36,7 +35,6 @@ $(function () {
     });
   }
 
-
   async function getAllProduct() {
     try {
       const response = await fetch(ApiHost + "/api/getAllProducts");
@@ -47,7 +45,7 @@ $(function () {
     }
   }
   const allProduct = sessionStorage.getItem("allProduct");
-  if (!allProduct) {
+  if (!allProduct || allProduct) {
     getAllProduct().then((data) => {
       sessionStorage.setItem("allProduct", JSON.stringify(data));
       renderDataTable(data, "US");
@@ -346,7 +344,7 @@ $(function () {
             ],
           },
           {
-            text: '<i class="bx bx-plus me-0 me-lg-2"></i><span class="d-none d-lg-inline-block">Add New Product</span>',
+            text: '<i class="bx bx-plus me-0 me-lg-2"></i><span class="d-none d-lg-inline-block addNew">Add New Product</span>',
             className: "add-new btn btn-primary ms-n1",
             attr: {
               "data-bs-toggle": "offcanvas",
@@ -390,6 +388,12 @@ $(function () {
           },
         },
         initComplete: function () {
+          var btn = $(".add-new");
+          if (btn.length) {
+            btn.on("click", function () {
+              window.location.href = "/manager";
+            });
+          }
           // Adding role filter once table initialized
           this.api()
             .columns(2)
@@ -501,16 +505,17 @@ $(function () {
               confirmButton: "btn btn-success",
             },
           });
-          fetch(ApiHost + "/api/deleteProduct", {
-            method: "POST",
-            headers: { "Content-type": "application/json; charset=UTF-8" },
-            body: JSON.stringify({ productid: removeID }),
-          }).catch((error) => {
-            console.error(
-              "There was a problem with the fetch operation:",
-              error
-            );
-          });
+        //   fetch(ApiHost + "/api/deleteProduct", {
+        //     method: "POST",
+        //     headers: { "Content-type": "application/json; charset=UTF-8" },
+        //     body: JSON.stringify({ productid: removeID }),
+        //   }).catch((error) => {
+        //     console.error(
+        //       "There was a problem with the fetch operation:",
+        //       error
+        //     );
+        //   });
+        console.log("Chức năng tạm ngưng để đảm bảo an toàn dữ liệu!");
         }
       });
     });
@@ -521,23 +526,23 @@ $(function () {
       $(".dataTables_filter .form-control").removeClass("form-control-sm");
       $(".dataTables_length .form-select").removeClass("form-select-sm");
     }, 300);
-    
+
     function setupWebSocket() {
-        var socket = io.connect(ApiHost);
-        socket.on("connect", function () {
-            console.log("Connected to WebSocket");
+      var socket = io.connect(ApiHost);
+      socket.on("connect", function () {
+        console.log("Connected to WebSocket");
+      });
+      socket.on("update_data", function (data) {
+        console.log(data);
+        console.log("change");
+        getAllProduct().then((data) => {
+          sessionStorage.setItem("allProduct", JSON.stringify(data));
+          dt_user.clear().rows.add(data["US"]).draw();
         });
-        socket.on('update_data', function(data) { 
-            console.log(data);
-            console.log("change");
-            getAllProduct().then((data) => {
-                sessionStorage.setItem("allProduct", JSON.stringify(data));
-                dt_user.clear().rows.add(data["US"]).draw();
-            });
-        });
+      });
     }
     setupWebSocket();
-    }
+  }
 });
 
 (function () {})();
