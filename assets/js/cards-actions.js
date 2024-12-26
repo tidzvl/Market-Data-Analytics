@@ -1,5 +1,10 @@
-/**
- * Cards Actions
+/*
+/* File: cards-actions.js
+/* Author: TiDz
+/* Contact: nguyentinvs123@gmail.com
+ * Created on Thu Dec 26 2024
+ * Description: 
+ * Useage: 
  */
 
 'use strict';

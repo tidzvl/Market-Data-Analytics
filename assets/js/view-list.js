@@ -1,5 +1,10 @@
-/**
- * Page User List
+/*
+/* File: view-list.js
+/* Author: TiDz
+/* Contact: nguyentinvs123@gmail.com
+ * Created on Thu Dec 26 2024
+ * Description: 
+ * Useage: 
  */
 
 "use strict";
@@ -505,16 +510,16 @@ $(function () {
               confirmButton: "btn btn-success",
             },
           });
-        //   fetch(ApiHost + "/api/deleteProduct", {
-        //     method: "POST",
-        //     headers: { "Content-type": "application/json; charset=UTF-8" },
-        //     body: JSON.stringify({ productid: removeID }),
-        //   }).catch((error) => {
-        //     console.error(
-        //       "There was a problem with the fetch operation:",
-        //       error
-        //     );
-        //   });
+          // fetch(ApiHost + "/api/deleteProduct", {
+          //   method: "POST",
+          //   headers: { "Content-type": "application/json; charset=UTF-8" },
+          //   body: JSON.stringify({ productid: removeID }),
+          // }).catch((error) => {
+          //   console.error(
+          //     "There was a problem with the fetch operation:",
+          //     error
+          //   );
+          // });
         console.log("Chức năng tạm ngưng để đảm bảo an toàn dữ liệu!");
         }
       });
