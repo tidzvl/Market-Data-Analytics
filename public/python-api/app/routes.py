@@ -65,6 +65,12 @@ def api_update_product():
     result, status = update_sales(data['productid'], data['country'], data['qty'], data['sellprice'], data['cost'])
     return jsonify(result), status
 
+@app.route('/api/calcuFromImport', methods = ['POST'])
+def api_calcu_from_import():
+    data = request.json
+    result, status = calcu_from_import(data)
+    return jsonify(result), status
+
 @app.route('/api/test', methods=['POST'])
 def api_test():
     result, status = test()

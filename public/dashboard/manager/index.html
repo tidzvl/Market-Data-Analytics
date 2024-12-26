@@ -42,6 +42,9 @@
   <link rel="stylesheet" href="../../../assets/vendor/libs/dropzone/dropzone.css" />
   <link rel="stylesheet" href="../../../assets/vendor/libs/flatpickr/flatpickr.css" />
   <link rel="stylesheet" href="../../../assets/vendor/libs/tagify/tagify.css" />
+  <link rel="stylesheet" href="../../assets/vendor/libs/datatables-bs5/datatables.bootstrap5.css" />
+  <link rel="stylesheet" href="../../assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.css" />
+  <link rel="stylesheet" href="../../assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.css" />
 
   <!-- Page CSS -->
 
@@ -323,7 +326,6 @@
                       <div class="d-flex align-content-center flex-wrap gap-2">
                         <div class="px-0">
                           <select id="unit-org" class="select2 form-select" data-placeholder="Select Unit">
-                            <option value="">Choose your unit</option>
                             <option value="percent">%</option>
                             <option value="kg">Kilogam</option>
                           </select>
@@ -344,13 +346,22 @@
                             <div class="mb-3">
                               <label class="form-label" for="input-region">Choose Your Region</label>
                               <select id="region-bus" class="select2 form-select" data-placeholder="Select RegionBus">
-                                <option value="">Choose Your Region</option>
                                 <option value="AU">Australia</option>
                                 <option value="CA">Canada</option>
                                 <option value="DE">Germany</option>
                                 <option value="FR">France</option>
                                 <option value="GB">United Kingdom</option>
                                 <option value="US">United States</option>
+                              </select>
+                            </div>
+                            <div class="mb-3">
+                              <label class="form-label" for="input-region">Choose The Time</label>
+                              <select id="time-bus" class="select2 form-select" data-placeholder="Select TimeBus">
+                                <option value="now">Now</option>
+                                <option value="1">Quarter 1</option>
+                                <option value="2">Quarter 2</option>
+                                <option value="3">Quarter 3</option>
+                                <option value="4">Quarter 4</option>
                               </select>
                             </div>
                             <div class="mb-3">
@@ -388,20 +399,286 @@
                               <div class="card-header">
                                 <h5 class="card-tile mb-0">Input your data</h5>
                               </div>
-                            </br>
-                              <div class="card-body">
-                                <div class="mb-3 w-px-150">
-                                  <label class="form-label" for="MountainBikes">Mountain Bikes</label>
-                                  <input type="number" class="form-control" id="Mountain-Bikes"
-                                    placeholder="Input unit" name="Mountain-Bikes" aria-label="Mountain-Bikes" />
+                              </br>
+                              <div class="card-body accordion accordion-header-primary">
+                                <div class="card accordion-item active mb-2">
+                                  <h2 class="accordion-header d-flex align-items-center">
+                                    <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#accordionWithIcon-1" aria-expanded="true">
+                                      <i class="bx bxs-baby-carriage me-2"></i>
+                                      Bikes
+                                    </button>
+                                  </h2>
+                                
+                                  <div id="accordionWithIcon-1" class="accordion-collapse collapse show" >
+                                    <div class="accordion-body d-flex justify-content-between align-items-start align-items-md-center">
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="MountainBikes">Mountain Bikes</label>
+                                        <input type="number" class="form-control catebikes" id="Mountain-Bikes"
+                                          placeholder="Input unit" name="MountainBikes" aria-label="Mountain-Bikes" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Road-Bikes">Road Bikes</label>
+                                        <input type="number" class="form-control catebikes" id="Road-Bikes"
+                                          placeholder="Input unit" name="RoadBikes" aria-label="Road-Bikes" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Touring-Bikes">Touring Bikes</label>
+                                        <input type="number" class="form-control catebikes" id="Touring-Bikes"
+                                          placeholder="Input unit" name="TouringBikes" aria-label="Touring-Bikes" />
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
-                                <div class="mb-3 w-px-150">
-                                  <label class="form-label" for="MountainBikes">Mountain Bikes</label>
-                                  <input type="number" class="form-control" id="Mountain-Bikes"
-                                    placeholder="Input unit" name="Mountain-Bikes" aria-label="Mountain-Bikes" />
+                                <div class="card accordion-item mb-2">
+                                  <h2 class="accordion-header d-flex align-items-center">
+                                    <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#accordionWithIcon-2" aria-expanded="false">
+                                      <i class="bx bxs-bolt-circle me-2"></i>
+                                      Components
+                                    </button>
+                                  </h2>
+                                  <div id="accordionWithIcon-2" class="accordion-collapse collapse" >
+                                    <div class="accordion-body d-flex justify-content-between align-items-start align-items-md-center">
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Handlebars">Handlebars</label>
+                                        <input type="number" class="form-control catecompo" id="Handlebars"
+                                          placeholder="Input unit" name="Handlebars" aria-label="Handlebars" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Bottom-Brackets">Bottom Brackets</label>
+                                        <input type="number" class="form-control catecompo" id="Bottom-Brackets"
+                                          placeholder="Input unit" name="BottomBrackets" aria-label="Bottom-Brackets" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Brakes">Brakes</label>
+                                        <input type="number" class="form-control catecompo" id="Brakes"
+                                          placeholder="Input unit" name="Brakes" aria-label="Brakes" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Chains">Chains</label>
+                                        <input type="number" class="form-control catecompo" id="Chains"
+                                          placeholder="Input unit" name="Chains" aria-label="Chains" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Cranksets">Cranksets</label>
+                                        <input type="number" class="form-control catecompo" id="Cranksets"
+                                          placeholder="Input unit" name="Cranksets" aria-label="Cranksets" />
+                                      </div>
+                                    </div>
+                                    <div class="accordion-body d-flex justify-content-between align-items-start align-items-md-center">
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Forks">Forks</label>
+                                        <input type="number" class="form-control catecompo" id="Forks"
+                                          placeholder="Input unit" name="Forks" aria-label="Forks" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Headsets">Headsets</label>
+                                        <input type="number" class="form-control catecompo" id="Headsets"
+                                          placeholder="Input unit" name="Headsets" aria-label="Headsets" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Mountain Frames">Mountain Frames</label>
+                                        <input type="number" class="form-control catecompo" id="Mountain Frames"
+                                          placeholder="Input unit" name="MountainFrames" aria-label="Mountain Frames" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Pedals">Pedals</label>
+                                        <input type="number" class="form-control catecompo" id="Pedals"
+                                          placeholder="Input unit" name="Pedals" aria-label="Pedals" />
+                                      </div>
+                                    </div>
+                                    <div class="accordion-body d-flex justify-content-between align-items-start align-items-md-center">
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Road Frames">Road Frames</label>
+                                        <input type="number" class="form-control catecompo" id="Road Frames"
+                                          placeholder="Input unit" name="RoadFrames" aria-label="Road Frames" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Saddles">Saddles</label>
+                                        <input type="number" class="form-control catecompo" id="Saddles"
+                                          placeholder="Input unit" name="Saddles" aria-label="Saddles" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Touring Frames">Touring Frames</label>
+                                        <input type="number" class="form-control catecompo" id="Touring Frames"
+                                          placeholder="Input unit" name="TouringFrames" aria-label="Touring Frames" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Wheels">Wheels</label>
+                                        <input type="number" class="form-control catecompo" id="Wheels"
+                                          placeholder="Input unit" name="Wheels" aria-label="Wheels" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Derailleurs">Derailleurs</label>
+                                        <input type="number" class="form-control catecompo" id="Derailleurs"
+                                          placeholder="Input unit" name="Derailleurs" aria-label="Derailleurs" />
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="card accordion-item mb-2">
+                                  <h2 class="accordion-header d-flex align-items-center">
+                                    <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#accordionWithIcon-3" aria-expanded="false">
+                                      <i class="bx bxs-palette me-2"></i>
+                                      Clothing
+                                    </button>
+                                  </h2>
+                                  <div id="accordionWithIcon-3" class="accordion-collapse collapse" >
+                                    <div class="accordion-body d-flex justify-content-between align-items-start align-items-md-center">
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Bib-Shorts">Bib-Shorts</label>
+                                        <input type="number" class="form-control cateclo" id="Bib-Shorts"
+                                          placeholder="Input unit" name="BibShorts" aria-label="Bib-Shorts" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Caps">Caps</label>
+                                        <input type="number" class="form-control cateclo" id="Caps"
+                                          placeholder="Input unit" name="Caps" aria-label="Caps" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Gloves">Gloves</label>
+                                        <input type="number" class="form-control cateclo" id="Gloves"
+                                          placeholder="Input unit" name="Gloves" aria-label="Gloves" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Jerseys">Jerseys</label>
+                                        <input type="number" class="form-control cateclo" id="Jerseys"
+                                          placeholder="Input unit" name="Jerseys" aria-label="Jerseys" />
+                                      </div>
+                                    </div>
+                                    <div class="accordion-body d-flex justify-content-between align-items-start align-items-md-center">
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Shorts">Shorts</label>
+                                        <input type="number" class="form-control cateclo" id="Shorts"
+                                          placeholder="Input unit" name="Shorts" aria-label="Shorts" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Socks">Socks</label>
+                                        <input type="number" class="form-control cateclo" id="Socks"
+                                          placeholder="Input unit" name="Socks" aria-label="Socks" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Tights">Tights</label>
+                                        <input type="number" class="form-control cateclo" id="Tights"
+                                          placeholder="Input unit" name="Tights" aria-label="Tights" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Vests">Vests</label>
+                                        <input type="number" class="form-control cateclo" id="Vests"
+                                          placeholder="Input unit" name="Vests" aria-label="Vests" />
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="card accordion-item mb-2">
+                                  <h2 class="accordion-header d-flex align-items-center">
+                                    <button type="button" class="accordion-button" data-bs-toggle="collapse" data-bs-target="#accordionWithIcon-4" aria-expanded="false">
+                                      <i class="bx bxs-extension me-2"></i>
+                                      Accessories
+                                    </button>
+                                  </h2>
+                                  <div id="accordionWithIcon-4" class="accordion-collapse collapse" >
+                                    <div class="accordion-body d-flex justify-content-between align-items-start align-items-md-center">
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Bike Racks">Bike Racks</label>
+                                        <input type="number" class="form-control cateacces" id="Bike Racks"
+                                          placeholder="Input unit" name="BikeRacks" aria-label="Bike Racks" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Bike Stands">Bike Stands</label>
+                                        <input type="number" class="form-control cateacces" id="Bike Stands"
+                                          placeholder="Input unit" name="BikeStands" aria-label="Bike Stands" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Bottles and Cages">Bottles and Cages</label>
+                                        <input type="number" class="form-control cateacces" id="Bottles and Cages"
+                                          placeholder="Input unit" name="BottlesandCages" aria-label="Bottles and Cages" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Cleaners">Cleaners</label>
+                                        <input type="number" class="form-control cateacces" id="Cleaners"
+                                          placeholder="Input unit" name="Cleaners" aria-label="Cleaners" />
+                                      </div>
+                                    </div>
+                                    <div class="accordion-body d-flex justify-content-between align-items-start align-items-md-center">
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Fenders">Fenders</label>
+                                        <input type="number" class="form-control cateacces" id="Fenders"
+                                          placeholder="Input unit" name="Fenders" aria-label="Fenders" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Helmets">Helmets</label>
+                                        <input type="number" class="form-control cateacces" id="Helmets"
+                                          placeholder="Input unit" name="Helmets" aria-label="Helmets" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Hydration Packs">Hydration Packs</label>
+                                        <input type="number" class="form-control cateacces" id="Hydration Packs"
+                                          placeholder="Input unit" name="HydrationPacks" aria-label="Hydration Packs" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Lights">Lights</label>
+                                        <input type="number" class="form-control cateacces" id="Lights"
+                                          placeholder="Input unit" name="Lights" aria-label="Lights" />
+                                      </div>
+                                    </div>
+                                    <div class="accordion-body d-flex justify-content-between align-items-start align-items-md-center">
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Locks">Locks</label>
+                                        <input type="number" class="form-control cateacces" id="Locks"
+                                          placeholder="Input unit" name="Locks" aria-label="Locks" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Panniers">Panniers</label>
+                                        <input type="number" class="form-control cateacces" id="Panniers"
+                                          placeholder="Input unit" name="Panniers" aria-label="Panniers" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Pumps">Pumps</label>
+                                        <input type="number" class="form-control cateacces" id="Pumps"
+                                          placeholder="Input unit" name="Pumps" aria-label="Pumps" />
+                                      </div>
+                                      <div class="mb-3 w-px-150 me-4">
+                                        <label class="form-label" for="Tires and Tubes">Tires and Tubes</label>
+                                        <input type="number" class="form-control cateacces" id="Tires and Tubes"
+                                          placeholder="Input unit" name="TiresandTubes" aria-label="Tires and Tubes" />
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="card-datatable table-responsive pt-0 d-none"><!-- d-none  -->
+                                  <table class="datatables-basic table table-bordered">
+                                    <thead>
+                                      <tr>
+                                        <th></th>
+                                        <th></th>
+                                        <th>Sub Category</th>
+                                        <th>Proportion</th>
+                                        <th>Weight</th>
+                                      </tr>
+                                    </thead>
+                                  </table>
                                 </div>
                               </div>
-                              <!-- </div> -->
+                            </div>
+                            <div class="tab-pane fade show" id="navs-tabs-line-top-join" role="tabpanel">
+                              <div class="card-body accordion accordion-header-primary">
+                                <div class="card accordion-item mb-2">
+                                  <button type="button" class="btn rounded-pill me-2 btn-primary forbus">Try Now!</button>
+                                </div>
+                              </div>
+                              <div class="card-datatable table-responsive pt-0 d-none"><!-- d-none  -->
+                                <table class="datatables-basic table table-bordered">
+                                  <thead>
+                                    <tr>
+                                      <th></th>
+                                      <th></th>
+                                      <th>Sub Category</th>
+                                      <th>Proportion</th>
+                                      <th>Weight</th>
+                                    </tr>
+                                  </thead>
+                                </table>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -475,12 +752,13 @@
   <script src="../../../assets/vendor/libs/flatpickr/flatpickr.js"></script>
   <script src="../../../assets/vendor/libs/tagify/tagify.js"></script>
   <script src="../../../assets/vendor/libs/sweetalert2/sweetalert2.js"></script>
-
+  <script src="../../assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js"></script>
   <!-- Main JS -->
   <script src="../../../assets/js/main.js"></script>
 
   <!-- Page JS -->
   <script src="../../../assets/js/app-ecommerce-product-add.js"></script>
+  <script src="../../../assets/js/calculator.js"></script>
 </body>
 
 </html>

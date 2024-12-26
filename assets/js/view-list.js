@@ -405,7 +405,7 @@ $(function () {
             .every(function () {
               var column = this;
               var select = $(
-                '<select id="region" class="form-select text-capitalize"><option value=""> Select Region </option></select>'
+                '<select id="region" class="form-select text-capitalize"><option value="US">US</option></select>'
               )
                 .appendTo(".region")
                 .on("change", function () {
@@ -484,7 +484,6 @@ $(function () {
       //   dt_user.row($(this).parents("tr")).remove().draw();
       const index = dt_user.row($(this).parents("tr"))[0][0];
       let region = document.getElementById("region").value;
-      if (!region) region = "US";
       // console.log(data[region][index]['ProductID']);
       const removeID = data[region][index]["ProductID"];
       Swal.fire({

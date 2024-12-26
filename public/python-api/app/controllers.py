@@ -13,6 +13,12 @@ import pandas as pd
 from sqlalchemy import text
 from flask import jsonify
 from collections import defaultdict
+from datetime import datetime
+import json
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.linear_model import LinearRegression
+from scipy.optimize import linprog
+import numpy as np
 import os
 
 def add_salesinfo(data):
@@ -403,6 +409,144 @@ def update_sales(productid, country, qty, sellprice, cost=None):
     db.session.commit()
     socketio.emit('update_data', {'status': 'success', 'message': 'Product updated successfully'})
     return {"message": "updated successfully"}, 201
+
+#support function for calcu
+
+def calculate_combined_index(data_dict):
+    combined_indices = {} 
+
+    for year, products in data_dict.items():
+        print(f"Năm {year}:")
+        for product, values in products.items():
+            profit = values["Profit"]
+            quantity = values["Quantity"]
+            weight = values["Weight"]
+            
+            if weight != 0:
+                profit_weight_ratio = profit / weight
+            else:
+                profit_weight_ratio = profit / quantity
+            
+            profit_quantity_ratio = profit / quantity
+            
+            combined_index = (profit_weight_ratio + profit_quantity_ratio) / 2  
+            
+            if product not in combined_indices:
+                combined_indices[product] = []
+            combined_indices[product].append((year, combined_index))
+
+    return combined_indices
+
+def predict_future_index(composite_indices):
+    output = {}
+    for product, indices in composite_indices.items():
+        years = np.array([int(year) for year, _ in indices]).reshape(-1, 1)
+        index_values = np.array([index for _, index in indices])
+        
+        model = LinearRegression()
+        
+        model.fit(years, index_values)
+        
+        year_2015 = np.array([[2015]])
+        predicted_index_2015 = model.predict(year_2015)
+        
+        output[product] = round(predicted_index_2015[0], 2)
+    return output
+
+def optimize_storage(predicted_indices):
+    products = list(predicted_indices.keys())
+    indices = np.array(list(predicted_indices.values()))
+    
+    c = -indices  
+    
+    A_eq = np.ones((1, len(products)))
+    b_eq = np.array([1])
+    
+    bounds = [(0.001, 0.6) for _ in range(len(products))]
+    
+    result = linprog(c, A_eq=A_eq, b_eq=b_eq, bounds=bounds, method='highs')
+    
+    if result.success:
+        allocation = result.x
+        allocation_dict = {products[i]: round(allocation[i] * 100, 2) for i in range(len(products))}
+        return allocation_dict
+    else:
+        return "Không tìm thấy giải pháp tối ưu"
+
+def combine_allocation(optimized_allocation, current_allocation, capacity = 1, min_percentage=0.001):
+    total_allocated = sum(
+        float(value) for product, value in current_allocation.items() if isinstance(value, (float, int))
+    )
+    
+    final_allocation = current_allocation.copy()
+    
+    for product in set(optimized_allocation.keys()).union(current_allocation.keys()):
+        try:
+            current_alloc = float(final_allocation.get(product, 0))
+            if current_alloc < min_percentage:
+                additional_alloc = min_percentage - current_alloc
+                if total_allocated + additional_alloc <= capacity:
+                    final_allocation[product] = round(min_percentage, 4)
+                    total_allocated += additional_alloc
+                else:
+                    final_allocation[product] = round(current_alloc + (capacity - total_allocated), 4)
+                    total_allocated = capacity
+
+            if total_allocated >= capacity:
+                break
+        except:
+            print("skip")
+    
+    for product, desired_alloc in optimized_allocation.items():
+        current_alloc = float(final_allocation.get(product, 0))
+        
+        if current_alloc < desired_alloc / 100:
+            additional_alloc = desired_alloc / 100 - current_alloc
+            if total_allocated + additional_alloc <= capacity:
+                final_allocation[product] = round(current_alloc + additional_alloc, 4)
+                total_allocated += additional_alloc
+            else:
+                final_allocation[product] = round(current_alloc + (capacity - total_allocated), 4)
+                total_allocated = capacity
+                
+        if total_allocated >= capacity:
+            break
+    
+    return final_allocation
+
+#
+
+
+def calcu_from_import(data):
+    if(data['time'] == 'now'):
+        time = datetime.now().month
+        if 1 <= time <= 3:
+            time = 1
+        elif 4 <= time <= 6:
+            time = 2
+        elif 7 <= time <= 9:
+            time = 3
+        else:
+            time = 4
+    else: 
+        time = int(data['time'])
+    was = get_weight_and_subcategory().get_json()
+    result = {} 
+    for year, quarters in was[data['region']].items(): 
+        if str(time) in quarters: 
+            result[year] = quarters[str(time)] 
+    # print(result)
+    composite_indices = calculate_combined_index(result)
+    predicted_indices = predict_future_index(composite_indices)
+    # print(predicted_indices)
+    optimized_allocation = optimize_storage(predicted_indices)
+    # data_dict = json.loads(result)
+    if data['inventory'] == '':
+        capacity = 1
+    else:
+        capacity = float(data['inventory'])
+    final_allocation = combine_allocation(optimized_allocation, data, capacity)
+    return {"message": "No broblem!", "data": final_allocation}, 200
 
 
 def test():
