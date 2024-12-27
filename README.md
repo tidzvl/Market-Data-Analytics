@@ -52,7 +52,26 @@ This project provides a Business Intelligence (BI) dashboard that allows users t
     flask run
     ```
 
-2. **Access the dashboard**: Open your browser and go to `http://127.0.0.1:5000` if you dont have any hosting or server open port.
+2. **Access the dashboard**: Open your browser and go to `http://127.0.0.1:5000` if you dont have any hosting or server open port and change the port in `/public/python-api/run.py`.
+
+3. **Add the dashboard (OPN)**: If you want to make this Dashboard for your website, you can try `nginx` and config follow:
+```
+    server {
+        listen 80;
+        server_name dashboard.yourdomainname;
+
+        location / {
+            proxy_pass http://localhost:5000; 
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+    }
+```
 
 ## API Endpoints
 - **Please check it in** `/public/python-api/app/routes.py`

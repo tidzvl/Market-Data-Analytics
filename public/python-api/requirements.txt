@@ -8,3 +8,5 @@ SQLAlchemy
 scikit-learn
 scipy
 numpy
+eventlet
+pymysql
