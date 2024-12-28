@@ -20,7 +20,7 @@
 
 'use strict';
 
-let ApiHost = 'http://localhost:80';
+let ApiHost = '';
 
 let isRtl = window.Helpers.isRtl(),
   isDarkStyle = window.Helpers.isDarkStyle(),
